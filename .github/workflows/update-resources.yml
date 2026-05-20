@@ -1,0 +1,28 @@
+name: Mettre à jour les scrapers vStream
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharger et extraire les scrapers
+        run: |
+          wget -q -O vstream.zip https://github.com/Kodi-vStream/venom-xbmc-addons/archive/refs/heads/master.zip
+          unzip -q vstream.zip
+          rm -rf resources
+          mv venom-xbmc-addons-master/plugin.video.vstream/resources ./resources
+          rm -rf venom-xbmc-addons-master vstream.zip
+      - name: Commit et push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add resources
+          git diff --quiet && git diff --staged --quiet || git commit -m "Mise à jour automatique des scrapers vStream"
+          git push
